@@ -1,0 +1,292 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'EK Modena Mono';
+  src: url('/fonts/EKModenaMono-Regular.woff2') format('woff2'),
+       url('/fonts/EKModenaMono-Regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'EK Modena Mono';
+  src: url('/fonts/EKModenaMono-Bold.woff2') format('woff2'),
+       url('/fonts/EKModenaMono-Bold.woff') format('woff');
+  font-weight: 700;
+  font-style: 700;
+}
+
+html, body {
+  font-family: 'EK Modena Mono', monospace;
+}
+
+a,
+button,
+input[type="submit"] {
+  font-family: 'EK Modena Mono';
+}
+
+@media(hover: hover) {
+  a:not(.bg-black):not(.mouse\:hover\:bg-black):hover,
+  button:not(.bg-black):not(.mouse\:hover\:bg-black):hover,
+  input[type="submit"]:not(.bg-black):hover {
+    font-family: 'EK Modena Mono';
+    font-weight: 700;
+  }
+}
+
+.hover-button,
+.hover-button:hover {
+  font-weight: normal !important;
+}
+
+.no-hover:hover {
+  font-family: 'EK Modena Mono';
+  font-weight: normal !important;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
+.rich-text p,
+.rich-text h1,
+.rich-text h2,
+.rich-text h3,
+.rich-text h4,
+.rich-text h5,
+.rich-text h6 {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.rich-text p:first-child,
+.rich-text h1:first-child,
+.rich-text h2:first-child,
+.rich-text h3:first-child,
+.rich-text h4:first-child,
+.rich-text h5:first-child,
+.rich-text h6:first-child {
+  margin-top: 0;
+}
+
+.rich-text p:last-child,
+.rich-text h1:last-child,
+.rich-text h2:last-child,
+.rich-text h3:last-child,
+.rich-text h4:last-child,
+.rich-text h5:last-child,
+.rich-text h6:last-child {
+  margin-bottom: 0;
+}
+
+.shopify-buy__select-icon {
+  display: none;
+}
+
+.shopify-buy__option-select {
+  display: none;
+}
+
+.shopify-buy__btn-wrapper {
+  padding: 0.5rem;
+}
+
+.shopify-buy__btn {
+  width: 100%;
+  height: 3rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 100px;
+  background-color: #000;
+  border: 1px solid #000;
+  color: #fff;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+@media(hover: hover) {
+  .shopify-buy__btn:hover {
+    background-color: #fff;
+    color: #000;
+    font-weight: normal !important;
+  }
+}
+
+.shopify-buy__cart-item__quantity-input {
+  width: 60%;
+  text-align: center;
+}
+
+.shopify-buy__cart-item {
+  position: relative;
+}
+
+.shopify-buy__cart-toggle {
+  display: none !important;
+}
+
+.shopify-buy__quantity-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.shopify-buy__btn--seamless {
+  display: block;
+  background-color: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.shopify-buy__btn--seamless svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.shopify-buy__btn--seamless .visuallyhidden {
+  display: none;
+}
+
+@keyframes animate {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.shopify-buy__cart-item__image {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: auto;
+  border-bottom: 1px solid black;
+}
+
+.shopify-buy__cart-bottom {
+  background: white;
+  position: absolute;
+  display: flex;
+  flex-wrap: wrap;
+  bottom: 0;
+  width: 100%;
+  left: 0;
+}
+
+.shopify-buy__cart__subtotal__text {
+  width: 66%;
+  display: block;
+}
+
+.shopify-buy__cart__subtotal__price {
+  width: 33%;
+  display: block;
+  border-left: 1px solid #000;
+}
+
+.shopify-buy__cart__subtotal__text,
+.shopify-buy__cart__subtotal__price,
+.shopify-buy__cart__notice {
+  padding-left: 0.5rem;
+  border-top: 1px solid #000;
+}
+
+.shopify-buy__btn--cart-checkout {
+  /* position: absolute; */
+  bottom: 0;
+  left: 0;
+  height: 2rem;
+  padding: 0.5rem;
+  border-radius: 0;
+  
+  
+  line-height: 1em;
+  width: 100%;
+  text-align: center;
+  border: none;
+  border-top: 1px solid #000;
+}
+
+@media(hover: hover) {
+  .shopify-buy__btn--cart-checkout:hover {
+    background-color: #fff;
+    color: #000;
+    border: none;
+    border-top: 1px solid #000;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+.shopify-buy__cart-item {
+  border-bottom: 1px solid #000;
+}
+
+.shopify-buy__cart-item__title,
+.shopify-buy__cart-item__variant-title,
+.shopify-buy__cart-item__price-and-discounts {
+  width: 100%;
+  display: block;
+  padding: 0 0.5rem;
+  border-bottom: 1px solid #000;
+}
+
+.no-cursor,
+.no-cursor * {
+  cursor: none !important;
+}
+
+.canvas-wrapper,
+.canvas-wrapper * {
+  pointer-events: none !important;
+  touch-action: none;
+}
+
+body .shopify-buy-frame--cart,
+body .shopify-buy-frame--cart.is-initialized {
+  transform: none;
+  position: static;
+  width: 100%;
+  height: 100%;
+  overflow-y: scroll;
+  max-width: none;
+  visibility: initial;
+  padding-bottom: 240px;
+}
+
+.pointer-events-all {
+  pointer-events: all !important;
+}
+
+.shopify-buy__cart-item__quantity-input {
+  -webkit-appearance: none !important;
+  -moz-appearance: textfield !important;
+  pointer-events: none;
+
+}
+
+.shopify-buy__cart-empty-text  {
+  padding: 1rem;
+}
+
+.shopify-buy__quantity-decrement svg,
+.shopify-buy__quantity-increment svg {
+  pointer-events: none;
+}
+
+.rich-text ol li {
+  list-style: initial;
+}
+
+.rich-text ul li {
+  list-style-type: disc;
+  list-style-position: inside;
+  padding-inline-start: initial;
+  display: list-item;
+}

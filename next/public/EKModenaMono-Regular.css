@@ -1,0 +1,7 @@
+@font-face {
+font-family: 'EKModenaMono-Regular'; 
+src: url('https://normform-2024.vercel.app/fonts/EKModenaMono-Regular.woff2') format('woff2'),
+     url('https://normform-2024.vercel.app/fonts/EKModenaMono-Regular.woff') format('woff');
+font-weight: normal; 
+font-style: normal;
+}

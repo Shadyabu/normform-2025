@@ -1,0 +1,46 @@
+{
+  "name": "normform-2024",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^3.4.2",
+    "@react-three/drei": "^9.97.3",
+    "@react-three/fiber": "^8.15.16",
+    "@react-three/postprocessing": "^2.16.0",
+    "@shopify/buy-button-js": "^2.4.0",
+    "@shopify/shopify-api": "^10.0.0",
+    "@shopify/storefront-api-client": "^0.3.4",
+    "framer-motion": "^11.0.3",
+    "graphql": "^16.8.1",
+    "graphql-request": "^7.0.1",
+    "groq": "^3.28.0",
+    "html-react-parser": "^5.1.8",
+    "isomorphic-unfetch": "^4.0.2",
+    "next": "^14.0.2",
+    "next-sanity": "^7.1.4",
+    "nextjs-google-analytics": "^2.3.3",
+    "react": "^18",
+    "react-cookie-consent": "^9.0.0",
+    "react-dom": "^18",
+    "react-fast-marquee": "^1.6.4",
+    "react-hook-form": "^7.51.5",
+    "react-mailchimp-subscribe": "^2.1.3",
+    "react-use-gesture": "^9.1.3",
+    "swiper": "^11.0.7",
+    "three": "^0.161.0",
+    "yup": "^1.4.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "14.0.4",
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0"
+  }
+}
