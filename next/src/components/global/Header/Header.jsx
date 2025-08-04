@@ -11,19 +11,24 @@ const Header = () => {
   const { windowWidth } = useSiteGlobals();
   const router = useRouter();
   const [ activeDropdown, setActiveDropdown ] = useState(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     if (windowWidth >= 1024) {
       setActiveDropdown(null);
     }
   }, [ windowWidth ]);
+
+  // Don't render conditional content until mounted to prevent hydration mismatch
+  const isDesktop = mounted && windowWidth >= 1024;
 
   return (
     <>
       <header className='fixed z-[999] top-0 left-0 w-screen bg-white grid grid-cols-3 xs:grid-cols-4 sm-md:grid-cols-6 h-8 border-b border-b-black'>
         <h1 className='hidden'>Normform</h1>
         {
-          windowWidth >= 1024 ?
+          isDesktop ?
           <>
             <div className='col-span-1 h-full justify-start items-center'>
               <Link
@@ -63,13 +68,15 @@ const Header = () => {
         }
         <HeaderIconsSection { ...{ activeDropdown, setActiveDropdown } } />
       </header>
-      <AnimatePresence mode='wait'>
-        {
-          activeDropdown &&
-          activeDropdown !== 'cart' &&
-          <HeaderDropdown { ...{ activeDropdown, setActiveDropdown } } key={ activeDropdown } />
-        }
-      </AnimatePresence>
+      {mounted && (
+        <AnimatePresence mode='wait'>
+          {
+            activeDropdown &&
+            activeDropdown !== 'cart' &&
+            <HeaderDropdown { ...{ activeDropdown, setActiveDropdown } } key={ activeDropdown } />
+          }
+        </AnimatePresence>
+      )}
     </>
   )
 };

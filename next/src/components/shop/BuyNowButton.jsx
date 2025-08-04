@@ -1,187 +1,156 @@
 import { useSiteGlobals } from '@/utils/SiteGlobalsContext';
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import BuyNowButtonOptions from './BuyNowButtonOptions';
 import BuyNowButtonColourOptions from './BuyNowButtonColourOptions';
+import cartManager from '@/utils/shopifyCart';
 
-const BuyNowButton = ({ shopifyId, product, }) => {
-
-  const container = useRef();
-  const { shopifyUI, shopifyCart, setCartIsOpen, currency, } = useSiteGlobals();
-
-  const [ isRendered, setIsRendered ] = useState(false);
-  const isRenderedRef = useRef();
-
-  const [ variantChanges, setVariantChanges ] = useState(0);
-
-  const [ variants, setVariants ] = useState([]);
+const BuyNowButton = ({ shopifyId, product }) => {
+  const { setCartIsOpen, currency } = useSiteGlobals();
+  const [isLoading, setIsLoading] = useState(false);
+  const [variants, setVariants] = useState([]);
+  const [selectedVariant, setSelectedVariant] = useState(null);
 
   const productVariants = useMemo(() => {
     if (product?.variants?.length > 0) {
       return product.variants;
     }
     return [];
-  }, [ product ]);
+  }, [product]);
 
-  const activeVariant = useMemo(() => {
-    if (productVariants?.length > 0) {
-      let productVariant = null;
-      for (let i = 0; i < productVariants.length; i++) {
-        let isMatch = true;
-        const options = [ productVariants[ i ].option1, productVariants[ i ].option2, productVariants[ i ].option3 ];
-        for (let variant of variants) {
-          if (!options.includes(variant.active)) {
-            isMatch = false;
-          }
-        }
-        if (isMatch) {
-          productVariant = productVariants[ i ].id;
-        }
-      }
-      return productVariant;
-    } else {
-      return null;
-    }
-  }, [ variants, productVariants ]);
-
-  useLayoutEffect(() => {
-    let raf;
-
-    const setupButton = () => {
-      let node = container.current;
-      if (!node) {
-        raf = requestAnimationFrame(setupButton);
-      } else {
-        container.current.innerHTML = '';
-
-        if (!shopifyUI) return;
-
-        if (node && shopifyUI && shopifyId && shopifyUI?.components?.cart?.length > 0) {
-          shopifyUI.createComponent('product', {
-            id: shopifyId.toString(),
-            variantId: activeVariant,
-            node,
-            moneyFormat: `${ currency.symbol }{{amount_no_decimals}}`,
-            options: {
-              product: {
-                iframe: false,
-                contents: {
-                  img: false,
-                  title: false,
-                  price: false
-                },
-                text: {
-                  button: 'Add to Cart'
-                },
-                order: [
-                  'options',
-                  'variantTitle',
-                  'price',
-                  'description',
-                  'button',
-                ],
-                selectedOptions: {
-                  Color: 'black',
-                  Size: 'md'
-                },
-                events: {
-                  addVariantToCart: function (product) {
-                    setCartIsOpen(true);
-                  },
-                  afterRender: function (component) {
-                    const variantsArray = [];
-                    if (component.node) {
-                      const variantNodes = component.node.querySelectorAll('.shopify-buy__option-select');
-                      if (variantNodes.length > 0) {
-                        variantNodes.forEach((node) => {
-                          const values = [];
-                          const select = node.querySelector('select');
-                          const name = select.getAttribute('name').toLowerCase();
-                          const options = select.querySelectorAll('option');
-
-                          options.forEach((option) => {
-                            values.push({
-                              value: option.getAttribute('value'),
-                              text: option.textContent
-                            });
-                          });
-
-                          variantsArray.push({
-                            name,
-                            values,
-                            select,
-                            active: values[ 0 ].value,
-                          });
-                        });
-                      }
-                    }
-                    if (!isRenderedRef.current) {
-                      setVariants(variantsArray);
-                      setIsRendered(true);
-                      isRenderedRef.current = true;
-                    }
-                  },
-                  afterUpdateConfig: function (component) {
-                  },
-                  DOMEvents: {
-                    'click .option-input': function (event) {
-                    }
-                  },
-                },
-              },
-              toggle: {
-                iframe: false,
-                contents: {
-                  title: false,
-                  price: false,
-                  img: false,
-                  button: 'Close'
-                }
-              },
-            }
-          });
-        }
-      }
-    }
-
-    setupButton();
-
-    return () => {
-      cancelAnimationFrame(raf);
-    }
-  }, [ shopifyId, shopifyUI, shopifyUI?.components?.cart, shopifyCart, setCartIsOpen, currency.symbol, activeVariant, ]);
-
+  // Initialize cart manager
   useEffect(() => {
-    if (variants?.length > 0 && isRendered) {
-      for (let i = 0; i < variants?.length; i++) {
-        const variant = variants[ i ];
-        if (variant.active && variant.select) {
-          const select = variant.select;
-          const options = select.querySelectorAll('option');
-          options.forEach((option) => {
-            if (option.getAttribute('value') === variant.active) {
-              option.selected = true;
-            }
-          });
-        }
+    cartManager.initialize();
+  }, []);
+
+  // Set up variant options
+  useEffect(() => {
+    if (productVariants.length > 0) {
+      const variantOptions = [];
+      
+      // Extract option names from first variant
+      const firstVariant = productVariants[0];
+      const optionNames = [];
+      
+      if (firstVariant.option1) optionNames.push(firstVariant.option1);
+      if (firstVariant.option2) optionNames.push(firstVariant.option2);
+      if (firstVariant.option3) optionNames.push(firstVariant.option3);
+
+      // Create variant options structure
+      optionNames.forEach((optionName, index) => {
+        const values = [];
+        productVariants.forEach(variant => {
+          const optionValue = [variant.option1, variant.option2, variant.option3][index];
+          if (optionValue && !values.find(v => v.value === optionValue)) {
+            values.push({
+              value: optionValue,
+              text: optionValue
+            });
+          }
+        });
+
+        variantOptions.push({
+          name: optionName.toLowerCase(),
+          values,
+          active: values[0]?.value || '',
+        });
+      });
+
+      setVariants(variantOptions);
+      setSelectedVariant(productVariants[0]);
+    }
+  }, [productVariants]);
+
+  // Update selected variant when options change
+  useEffect(() => {
+    if (variants.length > 0 && productVariants.length > 0) {
+      const matchingVariant = productVariants.find(variant => {
+        console.log('matchingVariant variant',variant)
+        const options = [variant.option1, variant.option2, variant.option3];
+
+        console.log('matchingVariant options',options)
+        return variants.every(variantOption => 
+          options.includes(variantOption.active)
+        );
+      });
+      
+      if (matchingVariant) {
+        setSelectedVariant(matchingVariant);
       }
     }
-  }, [ variants, isRendered, ]);
+  }, [variants, productVariants]);
+
+  const handleAddToCart = async () => {
+    if (!selectedVariant) {
+      console.error('No variant selected');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Use the Global ID (gid) instead of numeric ID for Shopify Storefront API
+      const variantGid = selectedVariant.gid || selectedVariant.id;
+      await cartManager.addToCart(variantGid, 1);
+      setCartIsOpen(true);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      // You could show a toast notification here
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVariantChange = (variantName, newValue) => {
+    setVariants(prevVariants => 
+      prevVariants.map(variant => 
+        variant.name === variantName 
+          ? { ...variant, active: newValue }
+          : variant
+      )
+    );
+  };
+  console.log('setVariants',selectedVariant)
+  console.log('variants',variants)
 
   return (
     <div className=''>
-      {
-        variants?.map((variant, index) => (
-          (
-            variant.name.toLowerCase() === 'color' ||
-            variant.name.toLowerCase() === 'colors' ||
-            variant.name.toLowerCase() === 'colour' ||
-            variant.name.toLowerCase() === 'colours') ?
-          <BuyNowButtonColourOptions key={ index } { ...{ variant, variants, setVariants, variantChanges, setVariantChanges, } } />
-          :
-          <BuyNowButtonOptions key={ index } { ...{ variant, variants, setVariants, variantChanges, setVariantChanges, } } />
-        ))
-      }
-      <div className='' ref={ container } />
+      {variants.map((variant, index) => (
+        console.log('main variant',variant),
+        (variant.name.toLowerCase() === 'color' ||
+         variant.name.toLowerCase() === 'colors' ||
+         variant.name.toLowerCase() === 'colour' ||
+         variant.name.toLowerCase() === 'colours') ? (
+          <BuyNowButtonColourOptions 
+            key={index} 
+            variant={variant}
+            variants={variants}
+            setVariants={setVariants}
+            onVariantChange={handleVariantChange}
+          />
+        ) : (
+          <BuyNowButtonOptions 
+            key={index} 
+            variant={variant}
+            variants={variants}
+            setVariants={setVariants}
+            onVariantChange={handleVariantChange}
+          />
+        )
+      ))}
+      
+      <div class="shopify-buy__btn-wrapper" data-element="product.buttonWrapper">
+      <button
+  onClick={handleAddToCart}
+  disabled={isLoading || !selectedVariant || !selectedVariant?.isAvailable}
+  className='shopify-buy__btn'
+>
+  {isLoading
+    ? 'Adding...'
+    : selectedVariant?.isAvailable
+      ? 'Add to Cart'
+      : 'Sold Out'}
+</button>
+
+      </div>
     </div>
   );
 };

@@ -2,13 +2,15 @@ import { useState, useEffect } from 'react';
 
 const useWindowSize = () => {
   const [data, setData] = useState({
-    windowWidth: 1,
-    windowHeight: 1,
-    longestSide: 1,
-    shortestSide: 1
+    windowWidth: 0,
+    windowHeight: 0,
+    longestSide: 0,
+    shortestSide: 0
   });
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const handleWindowResize = () => {
       setData({
         windowWidth: window.innerWidth,
@@ -27,6 +29,16 @@ const useWindowSize = () => {
       }
     }
   }, []);
+
+  // Return default values during SSR to prevent hydration mismatch
+  if (!mounted) {
+    return {
+      windowWidth: 0,
+      windowHeight: 0,
+      longestSide: 0,
+      shortestSide: 0
+    };
+  }
 
   return data;
 };

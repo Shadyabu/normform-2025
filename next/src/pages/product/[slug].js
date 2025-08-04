@@ -12,7 +12,8 @@ import ProductsGrid from '@/components/shop/ProductsGrid';
 import Seo from '@/components/Seo';
 
 export default function Product({ data, productData, styleWithData, globalData }) {
-
+console.log('productData',productData)
+console.log('data',data)
   return (
     <motion.div
       initial={ { opacity: 0 } }
@@ -95,6 +96,23 @@ export async function getStaticProps(context) {
             currencyCode
           }
         }
+        variants(first: 100) {
+          edges {
+            node {
+              id
+              title
+              price {
+                amount
+                currencyCode
+              }
+              availableForSale
+              selectedOptions {
+                name
+                value
+              }
+            }
+          }
+        }
         images(first: 24) {
           edges {
             node {
@@ -108,6 +126,35 @@ export async function getStaticProps(context) {
   `;
 
   const data = await fetchShopifyData(PRODUCT_QUERY, { handle: `${ context.params.slug }` });
+
+  // Transform Shopify variants to match the expected format
+  if (data?.product?.variants?.edges) {
+    const transformedVariants = data.product.variants.edges.map(edge => {
+      const variant = edge.node;
+      const options = {};
+      variant.selectedOptions.forEach(option => {
+        const optionName = option.name.toLowerCase();
+        options[optionName] = option.value;
+      });
+      
+      return {
+        id: variant.id,
+        gid: variant.id, // Shopify Global ID
+        title: variant.title,
+        option1: options.color || options.colour || options.colors || '',
+        option2: options.size || '',
+        option3: '',
+        quantityAvailable: null, // Not available in public API
+        price: parseFloat(variant.price.amount),
+        isAvailable: variant.availableForSale,
+      };
+    });
+    
+    // Add transformed variants to productData
+    if (productData) {
+      productData.variants = transformedVariants;
+    }
+  }
 
   const styleWithData = [];
   

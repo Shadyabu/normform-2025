@@ -1,7 +1,7 @@
 import { useSiteGlobals } from '@/utils/SiteGlobalsContext';
 import { useMemo } from 'react';
 
-const BuyNowButtonColourOptions = ({ variant, variants, setVariants }) => {
+const BuyNowButtonColourOptions = ({ variant, onVariantChange }) => {
 
   const { siteGlobals } = useSiteGlobals();
 
@@ -36,7 +36,7 @@ const BuyNowButtonColourOptions = ({ variant, variants, setVariants }) => {
           variant.values?.map((value, index) => (
             <label
               className={ `relative block cursor-pointer text-center flex justify-center items-center mr-4 last:mr-0 h-5 w-5 rounded-[50%] border border-black transition-transform transition-rounded duration-[600ms] ${ variant.active === value.value ? 'rotate-45 scale-[0.8] rounded-none' : 'rotate-0 scale-1 mouse:hover:rotate-45 mouse:hover:scale-[0.8] mouse:hover:rounded-none' }` }
-              htmlFor={ value.value }
+              htmlFor={ `${variant.name}-${value.value}` }
               key={ value.value + ' ' + index }
               style={ {
                 backgroundColor: colors[ index ] ?? 'transparent',
@@ -46,14 +46,12 @@ const BuyNowButtonColourOptions = ({ variant, variants, setVariants }) => {
               <input
                 className='absolute opacity-0 border-none rounded-0 w-full h-full cursor-pointer'
                 type='radio'
-                name={ value.value }
-                checked={ variant.active === value.value ? true : false }
+                name={ variant.name }
+                id={ `${variant.name}-${value.value}` }
+                checked={ variant.active === value.value }
                 onChange={ (event) => {
                   if (event.target.checked) {
-                    const newVariants = [ ...variants ];
-                    const thisVariant = newVariants.find((v) => v.name === variant.name);
-                    thisVariant.active = value.value;
-                    setVariants(newVariants);
+                    onVariantChange(variant.name, value.value);
                   }
                 } }
               />

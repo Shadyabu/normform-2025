@@ -11,6 +11,11 @@ const LogoScene = () => {
   const group = useRef(null);
   
   const scale = useMemo(() => {
+    // Return default scale during SSR to prevent hydration mismatch
+    if (windowWidth === 0 || windowHeight === 0) {
+      return 0.6;
+    }
+    
     const windowMin = Math.min(windowWidth, windowHeight);
     const windowMax = Math.max(windowWidth, windowHeight);
   

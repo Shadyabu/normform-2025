@@ -23,6 +23,7 @@ export const PRODUCT_CONTENT = groq`
   "isDeleted": store.isDeleted,
   "variants": store.variants[]-> {
     "id": store.id,
+    "gid": store.gid,
     "title": store.title,
     "option1": store.option1,
     "option2": store.option2,

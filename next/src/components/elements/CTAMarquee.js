@@ -5,12 +5,14 @@ import Marquee from 'react-fast-marquee';
 const CTAMarquee = ({ text }) => {
 
   const { windowWidth, } = useSiteGlobals();
+  const [mounted, setMounted] = useState(false);
 
   const reference = useRef();
 
   const [ iterations, setIterations ] = useState(1);
 
   useEffect(() => {
+    setMounted(true);
     let raf = null;
     const calculateWidth = () => {
       if (reference.current) {
@@ -29,13 +31,17 @@ const CTAMarquee = ({ text }) => {
     };
   }, [ windowWidth ]);
 
+  // Use default values during SSR to prevent hydration mismatch
+  const maxWidth = mounted && windowWidth > 0 ? windowWidth + 'px' : '100%';
+  const minWidth = mounted && windowWidth > 0 ? windowWidth + 'px' : '100%';
+
   return (
     <div className='w-full h-8'>
       <Marquee gradient={ false }>
         <div className='w-auto h-8 whitespace-nowrap flex justify-evenly items-center'
           style={ {
-            maxWidth: iterations > 1 ? windowWidth + 'px' : undefined,
-            minWidth: iterations === 1 ? windowWidth + 'px' : undefined,
+            maxWidth: iterations > 1 ? maxWidth : undefined,
+            minWidth: iterations === 1 ? minWidth : undefined,
           } }
         >
           {

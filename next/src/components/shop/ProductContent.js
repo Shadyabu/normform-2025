@@ -20,6 +20,8 @@ const ProductContent = (props) => {
   const { windowWidth, currency, siteGlobals } = useSiteGlobals();
 
   const [ activeSection, setActiveSection ] = useState('description');
+
+  console.log('product',product)
   
   useEffect(() => {
     const img = document.createElement('img');

@@ -1,8 +1,17 @@
 import { useSiteGlobals } from '@/utils/SiteGlobalsContext';
+import { useState, useEffect } from 'react';
 
 const CreativeImageryBanner = ({ creativeImagery, height }) => {
 
   const { windowWidth } = useSiteGlobals();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Use default value during SSR to prevent hydration mismatch
+  const maxWidth = mounted && windowWidth >= 768 ? `${ 100 / creativeImagery.length }%` : '100%';
 
   return (
     <div
@@ -21,7 +30,7 @@ const CreativeImageryBanner = ({ creativeImagery, height }) => {
             alt={ item.alt }
             className='block sm:h-full w-full object-cover max-sm:border-b max-sm:border-b-black max-sm:last:border-b-0 sm:border-r sm:border-r-black sm:last:border-r-0'
             style={ {
-              maxWidth: windowWidth >= 768 ? `${ 100 / creativeImagery.length }%` : '100%',
+              maxWidth: maxWidth,
             } }
           />
         ))

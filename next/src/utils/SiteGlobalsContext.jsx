@@ -58,6 +58,8 @@ export const SiteGlobalsProvider = ({ children }) => {
   const [ signupFormIsActive, setSignupFormIsActive ] = useState(true);
 
   const footerHeight = useMemo(() => {
+    // Use default value during SSR to prevent hydration mismatch
+    if (windowWidth === 0) return 65;
     if (windowWidth < 768) return 105;
     return 65;
   }, [ windowWidth ]);
