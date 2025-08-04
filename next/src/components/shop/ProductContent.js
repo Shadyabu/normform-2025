@@ -8,8 +8,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import PortableTextBlocks from '../blocks/PortableTextBlocks';
 import SizingChart from './SizingChart';
 
-
-
 const DynamicBuyNow = dynamic(() => import('./BuyNowButton'), {
   ssr: false
 });

@@ -19,13 +19,11 @@ const ModernCart = () => {
       }
     });
 
-    // Initialize cart
-    cartManager.initialize().then((initialCart) => {
-      setCart(initialCart);
-      if (initialCart) {
-        setCartNumber(initialCart.totalQuantity || 0);
-      }
-    });
+    // Get current cart state
+    const currentCart = cartManager.getCart();
+    if (currentCart) {
+      setCart(currentCart);
+    }
 
     return unsubscribe;
   }, [setCartNumber]);
@@ -43,8 +41,30 @@ const ModernCart = () => {
   };
 
   const handleCheckout = () => {
+    console.log('Checkout clicked');
+    console.log('Cart:', cart);
+    console.log('Checkout URL:', cart?.checkoutUrl);
+    
     if (cart?.checkoutUrl) {
+      console.log('Opening checkout URL:', cart.checkoutUrl);
       window.open(cart.checkoutUrl, '_blank');
+    } else {
+      console.error('No checkout URL available');
+      // Fallback: try to construct checkout URL manually
+      if (cart?.id) {
+        // Extract cart ID from Shopify cart ID format: gid://shopify/Cart/1234567890?key=abc123
+        const cartIdMatch = cart.id.match(/gid:\/\/shopify\/Cart\/([^?]+)/);
+        if (cartIdMatch) {
+          const cartId = cartIdMatch[1];
+          const checkoutUrl = `https://normform.world/cart/c/${cartId}`;
+          console.log('Using fallback checkout URL:', checkoutUrl);
+          window.open(checkoutUrl, '_blank');
+        } else {
+          console.error('Could not extract cart ID from:', cart.id);
+        }
+      } else {
+        console.error('No cart ID available for fallback checkout URL');
+      }
     }
   };
 

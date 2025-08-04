@@ -9,6 +9,7 @@ import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import { GoogleAnalytics } from 'nextjs-google-analytics';
 import { useEffect, useState } from 'react';
+import cartManager from '@/utils/shopifyCart';
 
 const DynamicShopifyInit = dynamic(() => import('@/utils/ShopifyInit'), {
   ssr: false
@@ -17,7 +18,7 @@ const DynamicShopifyInit = dynamic(() => import('@/utils/ShopifyInit'), {
 const Layout = ({ children }) => {
 
   const router = useRouter();
-  const { siteGlobals, menuIsActive, windowWidth, windowHeight, holdingPage } = useSiteGlobals();
+  const { siteGlobals, menuIsActive, windowWidth, windowHeight, holdingPage, setCartNumber } = useSiteGlobals();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -38,6 +39,46 @@ const Layout = ({ children }) => {
       window.removeEventListener('resize', handleResize);
     };
   }, [ router.asPath, windowHeight ]);
+
+  // Initialize cart globally
+  useEffect(() => {
+    if (mounted) {
+      let unsubscribe = null;
+      
+      const initializeCart = async () => {
+        try {
+          // Subscribe to cart changes globally
+          unsubscribe = cartManager.subscribe((updatedCart) => {
+            if (updatedCart) {
+              setCartNumber(updatedCart.totalQuantity || 0);
+            } else {
+              setCartNumber(0);
+            }
+          });
+
+          // Initialize cart
+          const initialCart = await cartManager.initialize();
+          if (initialCart) {
+            setCartNumber(initialCart.totalQuantity || 0);
+          } else {
+            setCartNumber(0);
+          }
+        } catch (error) {
+          console.error('Error initializing cart:', error);
+        }
+      };
+
+      // Add a small delay to ensure everything is ready
+      const timeoutId = setTimeout(initializeCart, 100);
+      
+      return () => {
+        clearTimeout(timeoutId);
+        if (unsubscribe) {
+          unsubscribe();
+        }
+      };
+    }
+  }, [mounted, setCartNumber]);
 
   if (holdingPage === true) {
     return <HoldingPage />

@@ -4,6 +4,7 @@ import { fetchShopifyData } from './fetchShopifyData';
 class ShopifyCartManager {
   constructor() {
     this.cartId = null;
+    this.fullCartId = null; // Store the full cart ID with query parameters
     this.cart = null;
     this.listeners = [];
   }
@@ -11,17 +12,26 @@ class ShopifyCartManager {
   // Initialize cart
   async initialize() {
     try {
+      // Check if localStorage is available
+      if (typeof window === 'undefined' || !window.localStorage) {
+        return await this.createCart();
+      }
+
       // Try to get existing cart from localStorage
       const savedCartId = localStorage.getItem('shopify_cart_id');
       
       if (savedCartId) {
         // Check if cart still exists
-        const cart = await this.getCart(savedCartId);
+        const cart = await this.getCartById(savedCartId);
+        
         if (cart) {
           this.cartId = savedCartId;
+          this.fullCartId = cart.id; // Store the full cart ID from the response
           this.cart = cart;
           this.notifyListeners();
           return cart;
+        } else {
+          localStorage.removeItem('shopify_cart_id');
         }
       }
       
@@ -109,8 +119,18 @@ class ShopifyCartManager {
       this.cartId = result.cartCreate.cart.id;
       this.cart = result.cartCreate.cart;
       
-      // Save cart ID to localStorage
-      localStorage.setItem('shopify_cart_id', this.cartId);
+      // Store both the full cart ID and clean cart ID
+      this.fullCartId = this.cartId;
+      const cleanCartId = this.cartId.split('?')[0];
+      
+      // Save clean cart ID to localStorage
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          localStorage.setItem('shopify_cart_id', cleanCartId);
+        }
+      } catch (error) {
+        console.error('Error saving cart ID to localStorage:', error);
+      }
       
       this.notifyListeners();
       return this.cart;
@@ -120,8 +140,9 @@ class ShopifyCartManager {
     }
   }
 
-  // Get existing cart
-  async getCart(cartId) {
+  // Get existing cart by ID
+  async getCartById(cartId) {
+    
     const query = `
       query getCart($cartId: ID!) {
         cart(id: $cartId) {
@@ -182,7 +203,7 @@ class ShopifyCartManager {
       const result = await fetchShopifyData(query, { cartId });
       return result.cart;
     } catch (error) {
-      console.error('Error getting cart:', error);
+      console.error('Error getting cart from Shopify:', error);
       return null;
     }
   }
@@ -257,7 +278,7 @@ class ShopifyCartManager {
 
     try {
       const result = await fetchShopifyData(mutation, {
-        cartId: this.cartId,
+        cartId: this.fullCartId || this.cartId, // Use full cart ID if available
         lines: [
           {
             merchandiseId: variantId,
@@ -271,6 +292,7 @@ class ShopifyCartManager {
       }
 
       this.cart = result.cartLinesAdd.cart;
+      this.fullCartId = this.cart.id; // Update full cart ID
       this.notifyListeners();
       return this.cart;
     } catch (error) {
@@ -345,7 +367,7 @@ class ShopifyCartManager {
 
     try {
       const result = await fetchShopifyData(mutation, {
-        cartId: this.cartId,
+        cartId: this.fullCartId || this.cartId, // Use full cart ID if available
         lines: [
           {
             id: lineId,
@@ -359,6 +381,7 @@ class ShopifyCartManager {
       }
 
       this.cart = result.cartLinesUpdate.cart;
+      this.fullCartId = this.cart.id; // Update full cart ID
       this.notifyListeners();
       return this.cart;
     } catch (error) {
@@ -433,7 +456,7 @@ class ShopifyCartManager {
 
     try {
       const result = await fetchShopifyData(mutation, {
-        cartId: this.cartId,
+        cartId: this.fullCartId || this.cartId, // Use full cart ID if available
         lineIds: [lineId]
       });
 
@@ -442,6 +465,7 @@ class ShopifyCartManager {
       }
 
       this.cart = result.cartLinesRemove.cart;
+      this.fullCartId = this.cart.id; // Update full cart ID
       this.notifyListeners();
       return this.cart;
     } catch (error) {
@@ -476,7 +500,13 @@ class ShopifyCartManager {
   // Clear cart
   async clearCart() {
     if (this.cartId) {
-      localStorage.removeItem('shopify_cart_id');
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          localStorage.removeItem('shopify_cart_id');
+        }
+      } catch (error) {
+        console.error('Error clearing cart from localStorage:', error);
+      }
       this.cartId = null;
       this.cart = null;
       this.notifyListeners();

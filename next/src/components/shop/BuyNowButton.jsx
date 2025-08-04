@@ -17,11 +17,6 @@ const BuyNowButton = ({ shopifyId, product }) => {
     return [];
   }, [product]);
 
-  // Initialize cart manager
-  useEffect(() => {
-    cartManager.initialize();
-  }, []);
-
   // Set up variant options
   useEffect(() => {
     if (productVariants.length > 0) {
