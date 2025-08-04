@@ -9,6 +9,16 @@ const ModernCart = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    // Initialize cart if not already done
+    const initializeCart = async () => {
+      if (!cartManager.getCart()) {
+        await cartManager.initialize();
+      }
+    };
+    
+    initializeCart();
+
+    // Subscribe to cart changes
     const unsubscribe = cartManager.subscribe((updatedCart) => {
       setCart(updatedCart);
       if (updatedCart) {
@@ -18,6 +28,7 @@ const ModernCart = () => {
       }
     });
 
+    // Get current cart state
     const currentCart = cartManager.getCart();
     if (currentCart) {
       setCart(currentCart);
@@ -38,22 +49,32 @@ const ModernCart = () => {
     await cartManager.removeFromCart(lineId);
   };
 
-  const handleCheckout = () => {
-    if (cart?.checkoutUrl) {
-      console.log('cart',cart.checkoutUrl);
-      //window.location.href = cart.checkoutUrl;
-    } else if (cart?.id) {
-      const cartIdMatch = cart.id.match(/gid:\/\/shopify\/Cart\/([^?]+)/);
-      if (cartIdMatch) {
-        const cartId = cartIdMatch[1];
-        const checkoutUrl = `https://normform.world/cart/c/${cartId}`;
-        console.log(checkoutUrl);
-       // window.location.href = checkoutUrl;
-      } else {
-        console.error('Could not extract cart ID for fallback checkout URL');
-      }
+  const handleCheckout = async () => {
+    console.log('Checkout clicked');
+    console.log('Cart:', cart);
+    console.log('Cart ID:', cart?.id);
+    console.log('Cart checkoutUrl:', cart?.checkoutUrl);
+    console.log('Cart manager cart:', cartManager.getCart());
+    
+    // Ensure cart is initialized
+    if (!cartManager.getCart()) {
+      console.log('Cart not initialized, initializing...');
+      await cartManager.initialize();
+    }
+    
+    // Use the cart manager's checkout URL method
+    const checkoutUrl = cartManager.getCheckoutUrl();
+    console.log('Using checkout URL:', checkoutUrl);
+    
+    if (checkoutUrl) {
+      console.log('Opening checkout URL in new tab:', checkoutUrl);
+      window.open(checkoutUrl, '_blank');
     } else {
-      console.error('No checkout URL or cart ID available');
+      console.error('No checkout URL available');
+      // Final fallback: redirect to cart page
+      const fallbackUrl = 'https://norm-form.myshopify.com/cart';
+      console.log('Using fallback URL:', fallbackUrl);
+      window.open(fallbackUrl, '_blank');
     }
   };
 
@@ -63,7 +84,7 @@ const ModernCart = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.5, style: 'ease' }}
         className='w-full h-full'
       >
         <div className='w-full h-full relative'>
@@ -83,7 +104,7 @@ const ModernCart = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.5, style: 'ease' }}
       className='w-full h-full'
     >
       <div className='w-full h-full relative'>
