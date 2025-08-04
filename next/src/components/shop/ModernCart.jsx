@@ -9,7 +9,6 @@ const ModernCart = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Subscribe to cart changes
     const unsubscribe = cartManager.subscribe((updatedCart) => {
       setCart(updatedCart);
       if (updatedCart) {
@@ -19,7 +18,6 @@ const ModernCart = () => {
       }
     });
 
-    // Get current cart state
     const currentCart = cartManager.getCart();
     if (currentCart) {
       setCart(currentCart);
@@ -41,30 +39,21 @@ const ModernCart = () => {
   };
 
   const handleCheckout = () => {
-    console.log('Checkout clicked');
-    console.log('Cart:', cart);
-    console.log('Checkout URL:', cart?.checkoutUrl);
-    
     if (cart?.checkoutUrl) {
-      console.log('Opening checkout URL:', cart.checkoutUrl);
-      window.open(cart.checkoutUrl, '_blank');
-    } else {
-      console.error('No checkout URL available');
-      // Fallback: try to construct checkout URL manually
-      if (cart?.id) {
-        // Extract cart ID from Shopify cart ID format: gid://shopify/Cart/1234567890?key=abc123
-        const cartIdMatch = cart.id.match(/gid:\/\/shopify\/Cart\/([^?]+)/);
-        if (cartIdMatch) {
-          const cartId = cartIdMatch[1];
-          const checkoutUrl = `https://normform.world/cart/c/${cartId}`;
-          console.log('Using fallback checkout URL:', checkoutUrl);
-          window.open(checkoutUrl, '_blank');
-        } else {
-          console.error('Could not extract cart ID from:', cart.id);
-        }
+      console.log('cart',cart.checkoutUrl);
+      //window.location.href = cart.checkoutUrl;
+    } else if (cart?.id) {
+      const cartIdMatch = cart.id.match(/gid:\/\/shopify\/Cart\/([^?]+)/);
+      if (cartIdMatch) {
+        const cartId = cartIdMatch[1];
+        const checkoutUrl = `https://normform.world/cart/c/${cartId}`;
+        console.log(checkoutUrl);
+       // window.location.href = checkoutUrl;
       } else {
-        console.error('No cart ID available for fallback checkout URL');
+        console.error('Could not extract cart ID for fallback checkout URL');
       }
+    } else {
+      console.error('No checkout URL or cart ID available');
     }
   };
 
@@ -74,7 +63,7 @@ const ModernCart = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.5, style: 'ease' }}
+        transition={{ duration: 0.5 }}
         className='w-full h-full'
       >
         <div className='w-full h-full relative'>
@@ -94,7 +83,7 @@ const ModernCart = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.5, style: 'ease' }}
+      transition={{ duration: 0.5 }}
       className='w-full h-full'
     >
       <div className='w-full h-full relative'>
@@ -182,4 +171,4 @@ const ModernCart = () => {
   );
 };
 
-export default ModernCart; 
+export default ModernCart;
