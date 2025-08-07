@@ -125,6 +125,10 @@ class ShopifyCartManager {
       this.cartId = result.cartCreate.cart.id;
       this.cart = result.cartCreate.cart;
       
+      console.log('Created cart:', this.cart);
+      console.log('Cart checkout URL:', this.cart.checkoutUrl);
+      console.log('Cart ID:', this.cart.id);
+      
       // Store both the full cart ID and clean cart ID
       this.fullCartId = this.cartId;
       const cleanCartId = this.cartId.split('?')[0];
@@ -306,6 +310,10 @@ class ShopifyCartManager {
 
       this.cart = result.cartLinesAdd.cart;
       this.fullCartId = this.cart.id; // Update full cart ID
+      
+      console.log('Updated cart after adding item:', this.cart);
+      console.log('Updated cart checkout URL:', this.cart.checkoutUrl);
+      
       this.notifyListeners();
       return this.cart;
     } catch (error) {
@@ -551,8 +559,22 @@ class ShopifyCartManager {
   // Get checkout URL
   getCheckoutUrl() {
     if (this.cart?.checkoutUrl) {
+      console.log('Getting checkout URL from cart:', this.cart.checkoutUrl);
       return this.cart.checkoutUrl;
     }
+    
+    // Try to construct checkout URL from cart ID
+    if (this.cart?.id) {
+      const cartIdMatch = this.cart.id.match(/gid:\/\/shopify\/Cart\/([^?]+)/);
+      if (cartIdMatch) {
+        const cartId = cartIdMatch[1];
+        const checkoutUrl = `https://norm-form.myshopify.com/cart/c/${cartId}`;
+        console.log('Constructed checkout URL from cart ID:', checkoutUrl);
+        return checkoutUrl;
+      }
+    }
+    
+    console.log('No checkout URL available in cart');
     return null;
   }
 

@@ -108,11 +108,15 @@ const ModernCart = () => {
       const cartIdMatch = cart.id.match(/gid:\/\/shopify\/Cart\/([^?]+)/);
       if (cartIdMatch) {
         const cartId = cartIdMatch[1];
-        checkoutUrl = `https://norm-form.myshopify.com/cart/c/${cartId}`;
+        // Use the correct domain from the cart checkout URL or fallback to myshopify domain
+        const domain = cart.checkoutUrl ? new URL(cart.checkoutUrl).hostname : 'norm-form.myshopify.com';
+        checkoutUrl = `https://${domain}/cart/c/${cartId}`;
       }
     }
     
     console.log('Final checkout URL:', checkoutUrl);
+    console.log('Cart checkout URL from API:', cart?.checkoutUrl);
+    console.log('Cart ID:', cart?.id);
     
     if (checkoutUrl) {
       console.log('Opening checkout URL in new tab:', checkoutUrl);
@@ -120,7 +124,7 @@ const ModernCart = () => {
     } else {
       console.error('No checkout URL available');
       // Final fallback: redirect to cart page
-      const fallbackUrl = 'https://norm-form.myshopify.com/cart';
+      const fallbackUrl = cart?.checkoutUrl ? new URL(cart.checkoutUrl).origin + '/cart' : 'https://norm-form.myshopify.com/cart';
       console.log('Using fallback URL:', fallbackUrl);
       window.open(fallbackUrl, '_blank');
     }

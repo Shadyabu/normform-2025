@@ -51,6 +51,7 @@ const ShopifyCart = () => {
           moneyFormat: `${ currency.symbol }{{amount_no_decimals}}`,
           node: document.getElementById('cart'),
           domain: 'norm-form.myshopify.com',
+          storefrontAccessToken: 'adf711700e6ac128354ad61291de1fc6',
           options: {
             toggle: {
               iframe: false,
@@ -102,6 +103,8 @@ const ShopifyCart = () => {
                 afterRender: (cart) => {
                   console.log('Cart afterRender event:', cart);
                   console.log('Cart checkout URL:', cart.checkoutUrl);
+                  console.log('Cart ID:', cart.id);
+                  console.log('Cart line items:', cart.lineItemCache);
                 },
                 updateItemQuantity: (cart) => {
                   let number = 0;
@@ -120,11 +123,23 @@ const ShopifyCart = () => {
                   console.log('Shopify cart checkout event triggered');
                   console.log('Cart checkout URL:', cart.checkoutUrl);
                   console.log('Cart data:', cart);
+                  console.log('Cart ID:', cart.id);
+                  
                   if (cart.checkoutUrl) {
                     console.log('Opening checkout URL:', cart.checkoutUrl);
                     window.open(cart.checkoutUrl, '_blank');
                   } else {
                     console.error('No checkout URL available in cart');
+                    // Try to construct checkout URL from cart ID
+                    if (cart.id) {
+                      const cartIdMatch = cart.id.match(/gid:\/\/shopify\/Cart\/([^?]+)/);
+                      if (cartIdMatch) {
+                        const cartId = cartIdMatch[1];
+                        const checkoutUrl = `https://norm-form.myshopify.com/cart/c/${cartId}`;
+                        console.log('Constructed checkout URL:', checkoutUrl);
+                        window.open(checkoutUrl, '_blank');
+                      }
+                    }
                   }
                 }
               }
