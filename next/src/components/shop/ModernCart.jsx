@@ -56,6 +56,13 @@ const ModernCart = () => {
     console.log('Cart checkoutUrl:', cart?.checkoutUrl);
     console.log('Cart manager cart:', cartManager.getCart());
     console.log('Cart manager methods:', Object.getOwnPropertyNames(cartManager));
+
+    // useEffect(() => {
+    //   // Whenever cart updates, store it in localStorage
+    //   if (cart) {
+    //     localStorage.setItem('checkoutCartData', JSON.stringify(cart));
+    //   }
+    // }, [cart]);
     
     // Ensure cart is initialized
     if (!cartManager.getCart()) {
@@ -146,6 +153,83 @@ const ModernCart = () => {
           )}
         </header>
         
+
+
+
+        {/* <div className='w-full h-full overflow-y-scroll'>
+  {Array.isArray(cart?.lines?.edges) && cart.lines.edges.length > 0 ? (
+    <div className='w-full'>
+      {cart.lines.edges.map(({ node: lineItem }) => (
+        <div key={lineItem.id} className='w-full border-b border-black p-4'>
+        <div className='flex items-start gap-4'>
+          {lineItem.merchandise.product.images.edges[0] && (
+            <img
+              src={lineItem.merchandise.product.images.edges[0].node.url}
+              alt={lineItem.merchandise.product.images.edges[0].node.altText || ''}
+              className='w-16 h-16 object-cover'
+            />
+          )}
+          
+          <div className='flex-1'>
+            <h3 className='font-medium'>{lineItem.merchandise.product.title}</h3>
+            <p className='text-sm text-gray-600'>{lineItem.merchandise.title}</p>
+            <p className='text-sm'>
+              {currency.symbol}{parseFloat(lineItem.merchandise.price.amount).toFixed(2)}
+            </p>
+            
+            <div className='flex items-center gap-2 mt-2'>
+              <button
+                onClick={() => handleQuantityChange(lineItem.id, lineItem.quantity - 1)}
+                disabled={isLoading}
+                className='w-6 h-6 border border-black flex items-center justify-center hover:bg-black hover:text-white transition-colors'
+              >
+                -
+              </button>
+              <span className='w-8 text-center'>{lineItem.quantity}</span>
+              <button
+                onClick={() => handleQuantityChange(lineItem.id, lineItem.quantity + 1)}
+                disabled={isLoading}
+                className='w-6 h-6 border border-black flex items-center justify-center hover:bg-black hover:text-white transition-colors'
+              >
+                +
+              </button>
+              <button
+                onClick={() => handleRemoveItem(lineItem.id)}
+                disabled={isLoading}
+                className='ml-4 text-sm underline hover:no-underline'
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      ))}
+       <div className='p-4 border-t border-black'>
+                <div className='flex justify-between items-center mb-4'>
+                  <span className='font-medium'>Subtotal:</span>
+                  <span className='font-medium'>
+                    {currency.symbol}{parseFloat(cart.cost.subtotalAmount.amount).toFixed(2)}
+                  </span>
+                </div>
+                
+                <button
+                  onClick={handleCheckout}
+                  disabled={isLoading}
+                  className='w-full px-4 py-2 bg-black text-white border border-black hover:bg-white hover:text-black transition-colors duration-200'
+                >
+                  Checkout
+                </button>
+              </div>
+    </div>
+  ) : (
+    <div className='p-4 text-center'>
+      <p>Your cart is empty</p>
+    </div>
+  )}
+</div> */}
+
+
         <div className='w-full h-full overflow-y-scroll'>
           {cart.lines.edges.length === 0 ? (
             <div className='p-4 text-center'>

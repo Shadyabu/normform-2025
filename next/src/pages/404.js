@@ -10,7 +10,7 @@ export default function PageNotFound404({ globalData, isHoldingPage }) {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/shop');
+   // router.replace('/shop');
   }, [ router ]);
 
   if (isHoldingPage === true && process.env.FULL_SITE !== 'true') {
