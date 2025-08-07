@@ -21,16 +21,22 @@ class ShopifyCartManager {
       const savedCartId = localStorage.getItem('shopify_cart_id');
       
       if (savedCartId) {
-        // Check if cart still exists
-        const cart = await this.getCartById(savedCartId);
-        
-        if (cart) {
-          this.cartId = savedCartId;
-          this.fullCartId = cart.id; // Store the full cart ID from the response
-          this.cart = cart;
-          this.notifyListeners();
-          return cart;
-        } else {
+        try {
+          // Check if cart still exists
+          const cart = await this.getCartById(savedCartId);
+          
+          if (cart) {
+            this.cartId = savedCartId;
+            this.fullCartId = cart.id; // Store the full cart ID from the response
+            this.cart = cart;
+            this.notifyListeners();
+            return cart;
+          } else {
+            console.log('Saved cart not found, removing from localStorage');
+            localStorage.removeItem('shopify_cart_id');
+          }
+        } catch (error) {
+          console.log('Error getting saved cart, creating new one:', error);
           localStorage.removeItem('shopify_cart_id');
         }
       }
@@ -201,6 +207,13 @@ class ShopifyCartManager {
 
     try {
       const result = await fetchShopifyData(query, { cartId });
+      
+      // Check if cart exists
+      if (!result.cart) {
+        console.log('Cart not found for ID:', cartId);
+        return null;
+      }
+      
       return result.cart;
     } catch (error) {
       console.error('Error getting cart from Shopify:', error);
@@ -297,6 +310,39 @@ class ShopifyCartManager {
       return this.cart;
     } catch (error) {
       console.error('Error adding to cart:', error);
+      
+      // If the cart doesn't exist, recreate it and try again
+      if (error.message.includes('does not exist') || error.message.includes('not found')) {
+        console.log('Cart not found, recreating cart and retrying...');
+        await this.clearCart();
+        await this.initialize();
+        
+        // Retry the add to cart operation
+        try {
+          const retryResult = await fetchShopifyData(mutation, {
+            cartId: this.fullCartId || this.cartId,
+            lines: [
+              {
+                merchandiseId: variantId,
+                quantity
+              }
+            ]
+          });
+
+          if (retryResult.cartLinesAdd.userErrors.length > 0) {
+            throw new Error(retryResult.cartLinesAdd.userErrors[0].message);
+          }
+
+          this.cart = retryResult.cartLinesAdd.cart;
+          this.fullCartId = this.cart.id;
+          this.notifyListeners();
+          return this.cart;
+        } catch (retryError) {
+          console.error('Error on retry:', retryError);
+          throw retryError;
+        }
+      }
+      
       throw error;
     }
   }
@@ -386,6 +432,15 @@ class ShopifyCartManager {
       return this.cart;
     } catch (error) {
       console.error('Error updating quantity:', error);
+      
+      // If the cart doesn't exist, recreate it
+      if (error.message.includes('does not exist') || error.message.includes('not found')) {
+        console.log('Cart not found during quantity update, recreating cart...');
+        await this.clearCart();
+        await this.initialize();
+        throw new Error('Cart was recreated. Please try adding the item again.');
+      }
+      
       throw error;
     }
   }
@@ -470,6 +525,15 @@ class ShopifyCartManager {
       return this.cart;
     } catch (error) {
       console.error('Error removing from cart:', error);
+      
+      // If the cart doesn't exist, recreate it
+      if (error.message.includes('does not exist') || error.message.includes('not found')) {
+        console.log('Cart not found during remove operation, recreating cart...');
+        await this.clearCart();
+        await this.initialize();
+        throw new Error('Cart was recreated. Please try adding the item again.');
+      }
+      
       throw error;
     }
   }
@@ -482,6 +546,14 @@ class ShopifyCartManager {
   // Get cart ID
   getCartId() {
     return this.cartId;
+  }
+
+  // Get checkout URL
+  getCheckoutUrl() {
+    if (this.cart?.checkoutUrl) {
+      return this.cart.checkoutUrl;
+    }
+    return null;
   }
 
   // Subscribe to cart changes
@@ -499,18 +571,17 @@ class ShopifyCartManager {
 
   // Clear cart
   async clearCart() {
-    if (this.cartId) {
-      try {
-        if (typeof window !== 'undefined' && window.localStorage) {
-          localStorage.removeItem('shopify_cart_id');
-        }
-      } catch (error) {
-        console.error('Error clearing cart from localStorage:', error);
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.removeItem('shopify_cart_id');
       }
-      this.cartId = null;
-      this.cart = null;
-      this.notifyListeners();
+    } catch (error) {
+      console.error('Error clearing cart from localStorage:', error);
     }
+    this.cartId = null;
+    this.fullCartId = null;
+    this.cart = null;
+    this.notifyListeners();
   }
 }
 

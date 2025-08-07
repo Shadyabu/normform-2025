@@ -103,6 +103,15 @@ const ModernCart = () => {
       }
     }
     
+    // If still no checkout URL, try to construct it from the cart ID
+    if (!checkoutUrl && cart?.id) {
+      const cartIdMatch = cart.id.match(/gid:\/\/shopify\/Cart\/([^?]+)/);
+      if (cartIdMatch) {
+        const cartId = cartIdMatch[1];
+        checkoutUrl = `https://norm-form.myshopify.com/cart/c/${cartId}`;
+      }
+    }
+    
     console.log('Final checkout URL:', checkoutUrl);
     
     if (checkoutUrl) {
@@ -111,7 +120,7 @@ const ModernCart = () => {
     } else {
       console.error('No checkout URL available');
       // Final fallback: redirect to cart page
-      const fallbackUrl = 'https://normform.world/cart';
+      const fallbackUrl = 'https://norm-form.myshopify.com/cart';
       console.log('Using fallback URL:', fallbackUrl);
       window.open(fallbackUrl, '_blank');
     }

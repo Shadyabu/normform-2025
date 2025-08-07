@@ -37,12 +37,20 @@ const ShopifyCart = () => {
     let raf;
   
     const createCartUI = () => {
+      console.log('Creating Shopify cart UI');
+      console.log('Shopify UI:', shopifyUI);
+      console.log('Cart ref:', cartRef.current);
+
+
+      
+
       if (cartRef.current) {
         cartRef.current.innerHTML = '';
 
         const newCart = shopifyUI.createComponent('cart', {
           moneyFormat: `${ currency.symbol }{{amount_no_decimals}}`,
           node: document.getElementById('cart'),
+          domain: 'norm-form.myshopify.com',
           options: {
             toggle: {
               iframe: false,
@@ -59,8 +67,29 @@ const ShopifyCart = () => {
                 discounts: false,
                 images: true,
               },
+              buttonDestination: 'checkout',
+              text: {
+                button: 'Checkout',
+                notice: 'Shipping and discount codes are added at checkout.',
+                subtotal: 'Subtotal',
+                total: 'Total',
+                empty: 'Your cart is empty.',
+                button_no_items: 'Checkout',
+                button_with_items: 'Checkout',
+              },
+              styles: {
+                button: {
+                  'background-color': '#000000',
+                  'color': '#ffffff',
+                  ':hover': {
+                    'background-color': '#ffffff',
+                    'color': '#000000',
+                  },
+                },
+              },
               events: {
                 beforeRender: (cart) => {
+                  console.log('Cart beforeRender event:', cart);
                   let number = 0;
                   const lineItems = cart.lineItemCache;
                   for (let lineItem of lineItems) {
@@ -71,7 +100,8 @@ const ShopifyCart = () => {
                   setCartNumber(number);
                 },
                 afterRender: (cart) => {
-                  // console.log(cart)
+                  console.log('Cart afterRender event:', cart);
+                  console.log('Cart checkout URL:', cart.checkoutUrl);
                 },
                 updateItemQuantity: (cart) => {
                   let number = 0;
@@ -84,24 +114,39 @@ const ShopifyCart = () => {
                   setCartNumber(number);
                   if (cart.lineItemCache?.length === 0) {
                   }
+                },
+                checkout: (cart) => {
+                  // Redirect to Shopify checkout
+                  console.log('Shopify cart checkout event triggered');
+                  console.log('Cart checkout URL:', cart.checkoutUrl);
+                  console.log('Cart data:', cart);
+                  if (cart.checkoutUrl) {
+                    console.log('Opening checkout URL:', cart.checkoutUrl);
+                    window.open(cart.checkoutUrl, '_blank');
+                  } else {
+                    console.error('No checkout URL available in cart');
+                  }
                 }
               }
             },
           }
    
         });
+        console.log('Created new cart component:', newCart);
         setShopifyCart(newCart);
-      } else {
-        raf = requestAnimationFrame(createCartUI);
+              } else {
+          console.log('Cart ref not ready, retrying...');
+          raf = requestAnimationFrame(createCartUI);
+        }
       }
-    }
 
-    createCartUI();
-    
-    return () => {
-      cancelAnimationFrame(raf);
-    }
-  }, [ shopifyUI?.createComponent, setShopifyCart, setCartNumber, currency.symbol, cartRefreshIterations, ]);
+            createCartUI();
+      
+      return () => {
+        console.log('Cleaning up cart component');
+        cancelAnimationFrame(raf);
+      }
+    }, [ shopifyUI?.createComponent, setShopifyCart, setCartNumber, currency.symbol, cartRefreshIterations ]);
 
   return (
     <motion.div

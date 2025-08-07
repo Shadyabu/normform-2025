@@ -88,6 +88,19 @@ const BuyNowButton = ({ shopifyId, product }) => {
       setCartIsOpen(true);
     } catch (error) {
       console.error('Error adding to cart:', error);
+      
+      // If cart was recreated, try adding again
+      if (error.message.includes('Cart was recreated')) {
+        console.log('Retrying add to cart after cart recreation...');
+        try {
+          const variantGid = selectedVariant.gid || selectedVariant.id;
+          await cartManager.addToCart(variantGid, 1);
+          setCartIsOpen(true);
+        } catch (retryError) {
+          console.error('Error on retry:', retryError);
+          // You could show a toast notification here
+        }
+      }
       // You could show a toast notification here
     } finally {
       setIsLoading(false);
